@@ -36,7 +36,13 @@ inputs = {
   };
 }
 ```
- 
+
+To disable wayland support, override the package like this:
+```nix
+environment.systemPackages = [
+  (pkgs.coccoc-browser.override { waylandSupport = false; })
+];
+```
 ### Without Flakes
  
 Clone this repository and build with:
