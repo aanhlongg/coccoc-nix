@@ -25,6 +25,7 @@
   vulkan-loader,
   libGL,
   wayland,
+  waylandSupport ? true,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -92,15 +93,16 @@ stdenv.mkDerivation (finalAttrs: {
     ln -s $out/opt/coccoc/browser/coccoc-browser $out/bin/coccoc-browser
 
     wrapProgram $out/bin/coccoc-browser \
-      --add-flags "--ozone-platform-hint=auto" \
-      --add-flags "--enable-features=WaylandWindowDecorations" \
+      ${lib.optionalString waylandSupport ''--add-flags "--ozone-platform-hint=auto" --add-flags "--enable-features=WaylandWindowDecorations"''} \
       --prefix LD_LIBRARY_PATH : ${
-        lib.makeLibraryPath [
-          pipewire
-          vulkan-loader
-          libGL
-          wayland
-        ]
+        lib.makeLibraryPath (
+          [
+            pipewire
+            vulkan-loader
+            libGL
+          ]
+          ++ lib.optionals waylandSupport [ wayland ]
+        )
       }
 
     runHook postInstall
