@@ -3,6 +3,7 @@
 A Nix derivation to package [Cốc Cốc](https://coccoc.com/) for Nix/NixOS. \
 Cốc Cốc is a popular browser optimized for vietnamese people, offering an built-in ad blocker, video downloading, sidebar integration, direct torrent support, vietnamese language support, Tor-based incognito mode, and more.
 
+> This derivation was submitted as a pull request to [nixpkgs](https://github.com/NixOS/nixpkgs/pull/538464). Until it is merged, you can use it directly from this repository.
 
 ---
  
