@@ -30,7 +30,7 @@
 
 stdenv.mkDerivation (finalAttrs: {
   pname = "coccoc-browser";
-  version = "147.0.7727.150";
+  version = "153.0.150";
 
   src = fetchurl {
     url = "https://browser-linux.coccoc.com/deb/pool/main/coccoc-browser-stable_147.0.7727.150-1_amd64.deb";
