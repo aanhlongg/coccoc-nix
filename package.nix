@@ -5,8 +5,6 @@
   autoPatchelfHook,
   dpkg,
   makeWrapper,
-  copyDesktopItems,
-  makeDesktopItem,
   cairo,
   pango,
   systemd,
@@ -23,6 +21,10 @@
   nspr,
   nss,
   alsa-lib,
+  pipewire,
+  vulkan-loader,
+  libGL,
+  wayland,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -32,12 +34,6 @@ stdenv.mkDerivation (finalAttrs: {
   src = fetchurl {
     url = "https://browser-linux.coccoc.com/deb/pool/main/coccoc-browser-stable_147.0.7727.150-1_amd64.deb";
     hash = "sha256-MwQRQiEHdMyTY5E3LxhA7a+/T/eAEGBoCf8NhiFxkYE=";
-  };
-
-  icon = fetchurl {
-    name = "coccoc.png";
-    url = "https://coccoc.com/assets/images/home/compare/coccoc.png";
-    hash = "sha256-V0c3WZhC/Ob6Zde8oSGxpaXz9HSJjM+ZqGOF6HfKSL8=";
   };
 
   nativeBuildInputs = [
@@ -80,29 +76,35 @@ stdenv.mkDerivation (finalAttrs: {
     cp -R opt/coccoc $out/opt/
     cp -R usr/share/* $out/share/
 
-    # delete qt5 shim to prevent dependency collision    
-    rm $out/opt/coccoc/browser/libqt5_shim.so
+    # delete qt5 shim to prevent dependency collision
+    rm -f $out/opt/coccoc/browser/libqt5_shim.so
+
+    substituteInPlace $out/share/applications/coccoc-browser.desktop \
+      --replace-fail "/usr/bin/coccoc-browser-stable" "coccoc-browser"
+
+    for size in 16 24 32 48 64 128 256; do
+      if [ -f "$out/opt/coccoc/browser/product_logo_$size.png" ]; then
+        mkdir -p $out/share/icons/hicolor/''${size}x''${size}/apps
+        ln -s "$out/opt/coccoc/browser/product_logo_$size.png" $out/share/icons/hicolor/''${size}x''${size}/apps/coccoc.png
+      fi
+    done
 
     ln -s $out/opt/coccoc/browser/coccoc-browser $out/bin/coccoc-browser
 
-    install -Dm644 $icon $out/share/icons/hicolor/256x256/apps/coccoc.png
+    wrapProgram $out/bin/coccoc-browser \
+      --add-flags "--ozone-platform-hint=auto" \
+      --add-flags "--enable-features=WaylandWindowDecorations" \
+      --prefix LD_LIBRARY_PATH : ${
+        lib.makeLibraryPath [
+          pipewire
+          vulkan-loader
+          libGL
+          wayland
+        ]
+      }
 
     runHook postInstall
   '';
-
-  desktopItems = [
-    (makeDesktopItem {
-      name = "Cốc Cốc Browser";
-      exec = "coccoc-browser";
-      icon = "coccoc";
-      desktopName = "Cốc Cốc Browser";
-      comment = finalAttrs.meta.description;
-      categories = [
-        "Network"
-      ];
-      terminal = false;
-    })
-  ];
 
   meta = {
     description = "Cốc Cốc! The optimized web browser for vietnamese people";
